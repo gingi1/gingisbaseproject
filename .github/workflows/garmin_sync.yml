@@ -3,7 +3,7 @@ name: Garmin Connect Live Sync
 on:
   schedule:
     - cron: '0 5 * * *' # Läuft vollautomatisch jeden Morgen um 5:00 Uhr
-  workflow_dispatch: # Erlaubt es dir, den Sync jederzeit per Mausklick manuell zu starten!
+  workflow_dispatch: # Erlaubt den manuellen Start per Klick!
 
 jobs:
   sync:
@@ -12,8 +12,6 @@ jobs:
     steps:
     - name: Code auschecken
       uses: actions/checkout@v3
-      with:
-        persist-credentials: true
 
     - name: Python einrichten
       uses: actions/setup-python@v4
@@ -21,15 +19,13 @@ jobs:
         python-version: '3.10'
 
     - name: Bibliothek installieren
-      run: |
-        pip install garminconnect
+      run: pip install garminconnect
 
     - name: Live Sync ausführen
       env:
         GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
         GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
-      run: |
-        python sync_garmin_live.py
+      run: python sync_garmin_live.py
 
     - name: Änderungen zu GitHub pushen
       run: |
