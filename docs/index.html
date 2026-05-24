@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technische Dokumentation - Web3 Personal Fitness Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0b1329] text-slate-300 font-sans antialiased min-h-screen p-4 md:p-8 selection:bg-indigo-500/30">
+
+    <div class="max-w-4xl mx-auto space-y-8">
+        
+        <div class="relative overflow-hidden bg-gradient-to-br from-indigo-950/80 to-slate-900/90 border border-indigo-500/20 p-6 md:p-8 rounded-2xl shadow-2xl shadow-black/40">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight uppercase font-mono">System- & Projektdokumentation</h1>
+            <p class="text-indigo-400 font-medium text-sm md:text-base mt-2">Web3 Personal Fitness & Command Center Dashboard</p>
+            <div class="mt-4 pt-4 border-t border-slate-800/60 flex flex-wrap gap-4 text-xs font-mono text-slate-400">
+                <div>Status: <span class="text-green-400 font-bold">● Aktiv & Deployed</span></div>
+                <div>Infrastruktur: <span class="text-indigo-400">Base L2 & Vercel</span></div>
+                <div>Version: <span class="text-slate-200">1.1.0 (Mai 2026)</span></div>
+            </div>
+        </div>
+
+        <section class="bg-slate-950/40 border border-slate-900 rounded-2xl p-6 md:p-8 space-y-4">
+            <h2 class="text-xl md:text-2xl font-bold text-white flex items-center gap-3 border-l-4 border-indigo-500 pl-3">
+                1. Architektur & Systemübersicht
+            </h2>
+            <p class="text-slate-300 leading-relaxed text-justify">
+                Das Projekt ist als hochperformante, serverlose Single Page Application (SPA) konzipiert, die als persönliche digitale Kommandozentrale dient. Sie aggregiert private Leistungskennzahlen und ermöglicht das zensurresistente Publizieren von Marktanalysen und persönlichen Statements. Das System verzichtet bewusst auf eine traditionelle Datenbankstruktur und setzt stattdessen auf ein hybrides Datenhaltungsmodell.
+            </p>
+            <p class="text-slate-400 text-sm leading-relaxed">
+                Die Architektur teilt sich in drei primäre Schichten auf: Das statisch kompilierte Web-Frontend, eine serverlose API-Integrationsschicht für geschützte Legacy-Daten (Garmin Connect Cloud) sowie das dezentrale State-Management direkt im Ethereum Layer-2 Netzwerk (Base Mainnet).
+            </p>
+        </section>
+
+        <section class="bg-slate-950/40 border border-slate-900 rounded-2xl p-6 md:p-8 space-y-4">
+            <h2 class="text-xl md:text-2xl font-bold text-white flex items-center gap-3 border-l-4 border-indigo-500 pl-3">
+                2. Frontend-Architektur & UI-Komponenten
+            </h2>
+            <p class="text-slate-300 leading-relaxed">
+                Das User Interface basiert auf nativem HTML5, Vanilla JavaScript (ES6+) und Tailwind CSS. Die Benutzeroberfläche nutzt ein reaktives, tab-basiertes Navigationssystem, das über die JavaScript-Funktion <code class="bg-slate-900 text-indigo-300 px-1.5 py-0.5 rounded font-mono text-xs">switchTab(tabName)</code> gesteuert wird. Nicht aktive Bereiche werden per CSS-Klasse <code class="bg-slate-900 text-indigo-300 px-1.5 py-0.5 rounded font-mono text-xs">hidden</code> vollständig aus dem Render-Tree entfernt.
+            </p>
+            <p class="text-slate-300 leading-relaxed">
+                Zur Optimierung der Ästhetik auf mobilen Geräten wurde die Navigationsleiste mit einer horizontalen Scrollfunktion ausgestattet, wobei störende visuelle Bildlaufelemente über dedizierte Tailwind-Klassen plattformübergreifend unterdrückt wurden:
+            </p>
+            <pre class="bg-slate-950 text-cyan-400 p-4 rounded-xl border border-slate-800 text-xs md:text-sm overflow-x-auto font-mono">&lt;nav class="flex gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden max-w-full w-full sm:w-auto"&gt;</pre>
+            
+            <h3 class="text-lg font-semibold text-indigo-400 mt-4">Clientseitige Pagination</h3>
+            <p class="text-slate-400 text-sm">
+                Da der Umfang der Fitness-Rohdaten beträchtlich ist, implementiert das Frontend eine Client-seitige Pagination über die Routinen <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">renderKraftTable()</code> und <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">renderCardioTable()</code>. Die maximale Tabellenkapazität pro Segment ist über die Konstante <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">const itemsPerPage = 10;</code> fest definiert.
+            </p>
+        </section>
+
+        <section class="bg-slate-950/40 border border-slate-900 rounded-2xl p-6 md:p-8 space-y-4">
+            <h2 class="text-xl md:text-2xl font-bold text-white flex items-center gap-3 border-l-4 border-indigo-500 pl-3">
+                3. Garmin Live-Sync Integration
+            </h2>
+            <p class="text-slate-300 leading-relaxed">
+                Die Erfassung physischer Datenströme erfolgt über eine automatisierte Integrationsschicht zur Garmin Cloud. Beim Laden des Dokuments (Event: <code class="bg-slate-900 text-indigo-300 px-1.5 py-0.5 rounded font-mono text-xs">DOMContentLoaded</code>) wird asynchron die Funktion <code class="bg-slate-900 text-indigo-300 px-1.5 py-0.5 rounded font-mono text-xs">executeGarminLiveSync()</code> instanziiert.
+            </p>
+            <p class="text-slate-400 text-sm">
+                Das System sendet einen HTTP-Request an die serverlose Vercel-Umgebung unter dem Endpunkt <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">/api/garmin_sync</code>. Diese Serverless-Funktion verwaltet die OAuth-Tokens sicher serverseitig, fragt die Garmin-Connect-Schnittstelle ab und transformiert das empfangene JSON-Paket in die strukturierten Arrays für Kraft- und Cardiotraining.
+            </p>
+        </section>
+
+        <section class="bg-slate-950/40 border border-slate-900 rounded-2xl p-6 md:p-8 space-y-4">
+            <h2 class="text-xl md:text-2xl font-bold text-white flex items-center gap-3 border-l-4 border-indigo-500 pl-3">
+                4. Web3 & Base Blockchain-Infrastruktur
+            </h2>
+            <p class="text-slate-300 leading-relaxed">
+                Das Herzstück des krypto-ökonomischen Sektors bildet die direkte Interaktion mit der EVM-kompatiblen Layer-2-Blockchain <strong>Base (Chain ID: 0x2105)</strong>. Der Zugriff erfolgt ohne zentrale Vermittler auf der Leseebene über öffentliche RPC-Nodes.
+            </p>
+
+            <h3 class="text-lg font-semibold text-indigo-400 mt-4">Persistent State Management (Auto-Login)</h3>
+            <p class="text-slate-400 text-sm">
+                Nach erfolgreicher Autorisierung über <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">connectWallet()</code> wird das Flag <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">web3_logged_in = 'true'</code> im <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">localStorage</code> gesetzt. Beim erneuten Laden verifiziert <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">checkPersistedConnection()</code> im Hintergrund über <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">eth_accounts</code> die Freigabe der Wallet, ohne dass ein lästiges Popup erscheint.
+            </p>
+
+            <h3 class="text-lg font-semibold text-indigo-400 mt-4">Clientseitiger Admin-Gatekeeper</h3>
+            <pre class="bg-slate-950 text-cyan-400 p-4 rounded-xl border border-slate-800 text-xs md:text-sm overflow-x-auto font-mono">if (userWalletAddress !== ADMIN_WALLET) {
+    alert("Zugriff verweigert: Admin-Rechte erforderlich.");
+    return;
+}</pre>
+
+            <h3 class="text-lg font-semibold text-indigo-400 mt-4">Solidity Smart Contract</h3>
+            <p class="text-slate-400 text-sm">
+                Der Kontrakt <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">DashboardFeed.sol</code> speichert Datenstrukturen permanent ab. Schreibrechte sind über den <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">onlyOwner</code>-Modifier exklusiv an die Admin-Wallet gekoppelt. Die Funktion <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">getStatements()</code> stellt die Daten als <code class="bg-slate-900 text-slate-300 px-1 py-0.5 rounded font-mono text-xs">public view</code> kostenfrei für das Frontend bereit.
+            </p>
+        </section>
+
+        <section class="bg-slate-950/40 border border-slate-900 rounded-2xl p-6 md:p-8 space-y-4">
+            <h2 class="text-xl md:text-2xl font-bold text-white flex items-center gap-3 border-l-4 border-indigo-500 pl-3">
+                5. Deployment- & Wartungsleitfaden
+            </h2>
+            <div class="bg-yellow-500/10 border-l-4 border-yellow-500 p-4 rounded-r-xl my-2 text-sm text-yellow-200">
+                <strong>Wichtig bei Codeanpassungen:</strong> Nach jeder Aktualisierung der Frontend-Logik oder der Smart-Contract-ABI muss die Produktionsumgebung auf Vercel zwingend neu kompiliert werden.
+            </div>
+            <h3 class="text-lg font-semibold text-indigo-400 mt-4">Frontend-Deployment über das Vercel CLI</h3>
+            <p class="text-slate-300 leading-relaxed">
+                Die Synchronisation des lokalen Quellcodes mit der Serverless-Hostingplattform wird über das Terminal mittels expliziter Cache-Inaktivierung ausgeführt:
+            </p>
+            <pre class="bg-slate-950 text-cyan-400 p-4 rounded-xl border border-slate-800 text-sm overflow-x-auto font-mono">vercel --prod --force</pre>
+            <p class="text-slate-400 text-sm">
+                Dieser Befehl erzwingt den vollständigen Neuaufbau aller Edge-Routen, bereinigt den CDN-Cache an den weltweiten Edge-Standorten und stellt sicher, dass die geänderten RPC-Aufrufe sofort global verfügbar sind.
+            </p>
+        </section>
+
+    </div>
+
+</body>
+</html>

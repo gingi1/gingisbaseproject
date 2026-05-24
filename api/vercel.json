@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "api/garmin_sync.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/garmin_sync",
+      "dest": "api/garmin_sync.py"
+    }
+  ]
+}

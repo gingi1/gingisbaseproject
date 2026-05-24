@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mein Base Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <style>
+        body { background-color: #0b0f19; color: #f1f5f9; font-family: ui-sans-serif, system-ui, sans-serif; }
+        .nav-active { border-bottom: 2px solid #6366f1; color: #ffffff; }
+        .table-container { overflow-x: auto; background-color: #111827; border-radius: 0.5rem; border: 1px solid #1f2937; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #1f2937; color: #9ca3af; font-size: 0.875rem; font-weight: 600; padding: 1rem; text-transform: uppercase; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 space-y-4">
+            
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-full bg-indigo-600 border-2 border-indigo-500 overflow-hidden flex-shrink-0"></div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight text-white">Persönliche Kommandozentrale</h1>
+                        <p class="text-xs text-indigo-400 font-mono tracking-wider">WEB3 &bull; FINANCE &bull; PHYSICAL DISCIPLINE</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto justify-end">
+                <button id="btn-connect-wallet" onclick="handleWalletAction()" class="w-full sm:w-auto bg-slate-950 hover:bg-slate-800 text-white text-xs font-mono py-2 px-4 rounded border border-slate-800 flex items-center justify-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-500" id="wallet-status-dot"></span>
+                    <span id="wallet-status-text">Wallet verbinden</span>
+                </button>
+
+                <nav class="flex gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none]">
+                    <button onclick="switchTab('fitness')" class="px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-slate-900">📄 Fitness</button>
+                    <button onclick="switchTab('krypto')" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition">🪙 Krypto</button>
+                    <button onclick="switchTab('wirtschaft')" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition">📈 Wirtschaft</button>
+                    <button onclick="switchTab('politik')" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition">🏛️ Politik</button>
+                    <button id="tab-ueber-mich-btn" onclick="switchTab('ueber-mich')" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition">👤 Über mich</button>
+                </nav>
+            </div>
+
+            <div class="border-t border-slate-800/60 pt-3 max-w-3xl">
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Willkommen auf meiner persönlichen Plattform. Ich bin leidenschaftlicher Technologie-Enthusiast und verfolge die Entwicklungen im Web3- und Krypto-Ökosystem mit Fokus on Onchain-Infrastruktur.
+                </p>
+                <p class="text-xs text-slate-400 leading-relaxed pt-2">
+                    Als Ausgleich zur mentalen Arbeit an Technologie-Projekten setze ich im Alltag auf absolute Disziplin im Bereich körperlicher Fitness und datengestütztem Krafttraining.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-8 flex-grow w-full">
+
+    <div id="web3-info-box" class="mb-8 max-w-5xl mx-auto relative hidden">
+        <div class="bg-slate-900/80 border border-indigo-500/30 rounded-xl p-5 backdrop-blur-sm">
+            
+            <button onclick="dismissWeb3Info()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition text-sm p-1" title="Hinweis dauerhaft ausblenden">
+                ✕
+            </button>
+
+            <h3 class="text-sm font-semibold text-slate-200 mb-2 flex items-center gap-2 pr-6">
+                <span>💬</span> Wichtiger Hinweis zum Kommentieren (Web3)
+            </h3>
+            <p class="text-xs text-slate-400 mb-3 pr-6">
+                Diese Plattform nutzt Onchain-Infrastruktur. Um in den verschiedenen Kategorien Kommentare zu hinterlassen, benötigst du eine <strong class="text-indigo-400">EVM-Wallet</strong> auf dem <strong class="text-blue-400">Base Netzwerk</strong>.
+            </p>
+            <div class="text-xs text-slate-300 space-y-1.5 border-l-2 border-slate-700 pl-3 mb-3">
+                <p><strong>0. Noch keine Wallet?</strong> Nutze die Video-Anleitung unten, um in 5 Minuten eine MetaMask-Wallet einzurichten.</p>
+                <p><strong>1. Wallet verbinden:</strong> Klicke oben im Menü auf den "Wallet verbinden"-Button.</p>
+                <p><strong>2. Signieren:</strong> Bestätige die kostenlose Nachricht in deiner Wallet zur Verifizierung.</p>
+                <p><strong>3. Assets auf Base übertragen:</strong> Falls dein Wallet auf Base noch leer ist, kannst du Guthaben ganz einfach über die offizielle Bridge transferieren.</p>
+            </div>
+            <div class="text-[11px] text-slate-500 pt-2 border-t border-slate-800/60 flex flex-wrap gap-4">
+                <span>🎥 <a href="https://www.youtube.com/watch?v=s6e2ziKUWuY" target="_blank" class="text-indigo-400 hover:underline">Video-Anleitung: MetaMask Wallet einrichten</a></span>
+                <span>📖 <a href="https://www.coinbase.com/de/learn/crypto-basics/how-to-add-base-to-metamask" target="_blank" class="text-blue-400 hover:underline">BASE Network zu MetaMask hinzufügen</a></span>
+                <span>🌉 <a href="https://bridge.base.org" target="_blank" class="text-emerald-400 hover:underline font-medium">Offizielle Bridge: Assets zu Base transferieren</a></span>
+            </div>
+        </div>
+    </div>
+    <div id="tab-fitness" class="space-y-12">
+            <section id="krafttraining" class="space-y-6 bg-slate-900/40 p-6 rounded-2xl border border-slate-800/60 shadow-xl shadow-indigo-500/5">
+                <div class="relative overflow-hidden rounded-xl border border-slate-800 shadow-inner">
+                    <img src="fitness_header_kraft.png" alt="Krafttraining & Garmin Vitalwerte" class="w-full h-48 md:h-64 object-cover object-center">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent flex items-end p-5">
+                        <h2 class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                            <span class="text-indigo-400">📊</span> Garmin Krafttraining & Vitalwerte
+                        </h2>
+                    </div>
+                </div>
+
+                <p class="text-sm text-slate-400 max-w-3xl pl-1">
+                    Diese Tabelle dokumentiert die Struktur deiner disziplinierten Trainingseinheiten. Sie zeigt die genauen Belastungsphasen, Sätze und Intensitäten.
+                </p>
+
+                <div class="table-container rounded-xl">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Datum / Zeit</th>
+                                <th>Dauer</th>
+                                <th>Sätze / Wdh.</th>
+                                <th>Kalorien (Aktiv / Gesamt)</th>
+                                <th>Puls (Ø / Max)</th>
+                                <th>Training Effect</th>
+                            </tr>
+                        </thead>
+                        <tbody id="krafttraining-table-body">
+                            <tr><td colspan="6" class="p-4 text-slate-500 italic">Lade Garmin-Live-Daten...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex items-center justify-between mt-4 px-2">
+                    <button id="btn-kraft-prev" class="bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded disabled:opacity-40" disabled>Zurück</button>
+                    <span id="page-kraft-info" class="text-slate-400 text-sm font-mono">Seite 1</span>
+                    <button id="btn-kraft-next" class="bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded disabled:opacity-40" disabled>Weiter</button>
+                </div>
+            </section>
+
+            <section id="cardio" class="space-y-6 bg-slate-900/40 p-6 rounded-2xl border border-slate-800/60 shadow-xl shadow-indigo-500/5">
+                <div class="relative overflow-hidden rounded-xl border border-slate-800 shadow-inner">
+                    <img src="fitness_header_cardio.png" alt="Cardio- & Ausdauer Vitaldaten" class="w-full h-48 md:h-64 object-cover object-center">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent flex items-end p-5">
+                        <h2 class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                            <span class="text-indigo-400">🏃‍♂️</span> Garmin Cardio- & Ausdauerdaten
+                        </h2>
+                    </div>
+                </div>
+
+                <p class="text-sm text-slate-400 max-w-3xl pl-1">
+                    Übersicht deiner Ausdauereinheiten. Hier analysieren wir Distanzen, Geschwindigkeiten und die dynamische Herzfrequenz-Entwicklung.
+                </p>
+
+                <div class="table-container rounded-xl">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Aktivität</th>
+                                <th>Dauer</th>
+                                <th>Distanz / Schritte</th>
+                                <th>Kalorien</th>
+                                <th>Puls (Ø / Max)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cardio-table-body">
+                            <tr><td colspan="6" class="p-4 text-slate-500 italic">Lade Garmin-Live-Daten...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex items-center justify-between mt-4 px-2">
+                    <button id="btn-cardio-prev" class="bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded disabled:opacity-40" disabled>Zurück</button>
+                    <span id="page-cardio-info" class="text-slate-400 text-sm font-mono">Seite 1</span>
+                    <button id="btn-cardio-next" class="bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded disabled:opacity-40" disabled>Weiter</button>
+                </div>
+            </section>
+         </div>
+    </section>
+
+    <div class="bg-slate-900/40 border border-slate-800/60 rounded-2xl p-6 shadow-xl shadow-indigo-950/10 mt-8">
+        <div class="mb-6">
+            <div class="flex items-center gap-3 mb-2">
+                <span>📊</span>
+                <h3 class="text-lg font-bold text-white tracking-tight">Garmin Wochenstatistiken</h3>
+            </div>
+            <p class="text-xs text-slate-400">
+                Historische Übersicht deiner wöchentlichen Trainingsleistung.
+            </p>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800/80 text-slate-400 font-semibold bg-slate-950/20">
+                        <th class="py-3 px-4">WOCHE</th>
+                        <th class="py-3 px-4 text-center">INTENSITÄTSMINUTEN</th>
+                        <th class="py-3 px-4 text-center">ZIEL %</th>
+                        <th class="py-3 px-4 text-center">AKTIVITÄTS-KCAL</th>
+                        <th class="py-3 px-4 text-right">SCHRITTE GESAMT</th>
+                    </tr>
+                </thead>
+                <tbody id="weekly-metrics-tbody" class="divide-y divide-slate-800/40 text-slate-300">
+                    <tr>
+                        <td colspan="5" class="py-4 text-center text-slate-500 italic">Lade Wochenstatistiken...</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="weekly-pagination-container" class="flex items-center justify-between mt-4 bg-slate-900/40 p-3 rounded-xl border border-slate-800/60">
+    <button id="btn-weekly-prev" onclick="changeWeeklyPage(-1)" class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 text-slate-200 font-medium rounded-lg transition">
+        Zurück
+    </button>
+    <span id="page-weekly-info" class="text-xs text-slate-400 font-mono">Seite 1 von 1</span>
+    <button id="btn-weekly-next" onclick="changeWeeklyPage(1)" class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 text-slate-200 font-medium rounded-lg transition">
+        Weiter
+    </button>
+</div>
+        </div>
+    </div>
+    </div> ``` 
+        </div>
+
+        <div id="tab-krypto" class="hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-2">🪙 Krypto & Web3</h2>
+                <button onclick="openAdminModal('krypto')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium py-2 px-4 rounded-lg transition shadow-lg shadow-indigo-600/10">Neuer Eintrag</button>
+            </div>
+            
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span class="font-mono text-indigo-400">#Krypto #Base</span>
+                    <span>17. Mai 2026 @ 10:45</span>
+                </div>
+                <p class="text-sm text-slate-200 leading-relaxed mb-4">
+    Die Onchain-Infrastruktur auf L2s wie Base zeigt eindrucksvoll, wo die Reise hingeht. Für mich ist diese Entwicklung die Konsequenz einer langen Reise: Ich bin <strong>seit 2015 dabei</strong> und beobachte den Markt <strong>täglich</strong>.
+</p>
+<p class="text-sm text-slate-200 leading-relaxed mb-4">
+    Wie viele stand ich damals vor einer bahnbrechenden, aber anfangs unerkannten Möglichkeit. Doch nach dem ersten Eintauchen in den Kaninchenbau wurde Krypto schnell zum absoluten <strong>Lebensinhalt</strong>. 
+</p>
+<p class="text-sm text-slate-200 leading-relaxed mb-4">
+    Ich habe die unerbittlichen Marktzyklen hautnah durchlebt – von den wilden Anfängen über die großen <strong>Bullruns 2017, 2021 und 2025</strong> bis heute. Jeder Zyklus hat bewiesen: Geduld und Disziplin schlagen kurzfristigen Hype.
+</p>
+<h4 class="text-sm font-semibold text-indigo-400 mt-5 mb-2">Wie geht es weiter mit Kryptos und vor allem Bitcoin?</h4>
+<p class="text-sm text-slate-200 leading-relaxed mb-4">
+    Bitcoin hat seinen Platz als digitales Gold im globalen Finanzgefüge zementiert. Die Zukunft des restlichen Ökosystems entscheidet sich jetzt an der echten Nutzbarkeit (Utility) – schnelle, kostengünstige Onchain-Anwendungen auf L2s werden den Ton angeben. Wir stehen erst am Anfang.
+</p>
+                <a href="https://base.org" target="_blank" class="block bg-slate-950 border border-slate-800 rounded-lg p-3 hover:border-slate-700 transition group">
+                    <div class="flex items-center justify-between">
+                        <div class="truncate pr-4">
+                            <p class="text-xs text-slate-400 font-mono truncate">base.org</p>
+                            <p class="text-sm text-slate-200 font-medium truncate group-hover:text-indigo-400 transition">Base – Build onchain</p>
+                        </div>
+                        <span class="text-slate-500 text-xl group-hover:text-white transition">&rarr;</span>
+                    </div>
+                </a>
+                <div class="border-t border-slate-800/60 pt-3 mt-2">
+                    <p class="text-xs font-semibold text-slate-400 mb-2">Kommentare (0)</p>
+                    <p class="text-xs text-slate-500 italic">Noch keine Kommentare vorhanden.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-wirtschaft" class="hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-2">📈 Wirtschaft & Märkte</h2>
+                <button onclick="openAdminModal('wirtschaft')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium py-2 px-4 rounded-lg transition shadow-lg shadow-indigo-600/10">Neuer Eintrag</button>
+            </div>
+            
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span class="font-mono text-indigo-400">#Wirtschaft</span>
+                    <span>17. Mai 2026 @ 10:30</span>
+                </div>
+                <p class="text-slate-200 leading-relaxed">Die weltweiten Schuldenberge wachsen unaufhaltsam weiter. Wer jetzt nicht in harte Assets diversifiziert, setzt sich langfristig einem enormen Kaufkraftverlust aus.</p>
+                <a href="https://example.com/marktbericht" target="_blank" class="block bg-slate-950 border border-slate-800 rounded-lg p-3 hover:border-slate-700 transition group">
+                    <div class="flex items-center justify-between">
+                        <div class="truncate pr-4">
+                            <p class="text-xs text-slate-400 font-mono truncate">example.com/marktbericht</p>
+                            <p class="text-sm text-slate-200 font-medium truncate group-hover:text-indigo-400 transition">Analyse der globalen Liquiditätszyklen</p>
+                        </div>
+                        <span class="text-slate-500 text-xl group-hover:text-white transition">&rarr;</span>
+                    </div>
+                </a>
+                <div class="border-t border-slate-800/60 pt-3 mt-2">
+                    <p class="text-xs font-semibold text-slate-400 mb-2">Kommentare (1)</p>
+                    <div class="bg-slate-950/50 p-2 rounded border border-slate-800/40 text-slate-300">
+                        <span class="font-semibold text-indigo-400">Finanzberater:</span> Sehe ich absolut genauso. Die Commodities ziehen bereits an.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-politik" class="hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-2">🏛️ Politik & Zeitgeschehen</h2>
+                <button onclick="openAdminModal('politik')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium py-2 px-4 rounded-lg transition shadow-lg shadow-indigo-600/10">Neuer Eintrag</button>
+            </div>
+            
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span class="font-mono text-indigo-400">#Politik</span>
+                    <span>16. Mai 2026 @ 18:15</span>
+                </div>
+                <p class="text-slate-200 leading-relaxed">Interessante Verschiebungen in den regulatorischen Rahmenbedingungen auf europäischer Ebene. Man versucht krampfhaft, dezentrale Netzwerke in alte Kontrollmuster zu pressen.</p>
+                <div class="border-t border-slate-800/60 pt-3 mt-2">
+                    <p class="text-xs font-semibold text-slate-400 mb-2">Kommentare (0)</p>
+                    <p class="text-xs text-slate-500 italic">Noch keine Kommentare vorhanden.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-ueber-mich" class="hidden max-w-4xl mx-auto px-4 mt-8 mb-12">
+            <div class="border-b border-slate-800 pb-6 mb-8">
+                <h2 class="text-2xl font-bold text-white font-mono flex items-center gap-3">👤 Werdegang & Transformation</h2>
+                <p class="text-slate-400 text-sm mt-2 font-mono">Wie aus Bequemlichkeit radikale Veränderung wurde.</p>
+            </div>
+
+            <div class="space-y-8 text-slate-300 leading-relaxed">
+                <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-800 shadow-xl">
+                    <h3 class="text-lg font-semibold text-rose-400 font-mono mb-3 flex items-center gap-2">🔴 Zwei Jahrzehnte Stillstand (Alter 25 bis 45)</h3>
+                    <p>Zwanzig Jahre lang war Sport in meinem Leben praktisch ein Fremdwort. Schlechte Ernährung, wenig Bewegung und die alltäglichen Ausreden führten zu einer stetigen Abwärtsspirale.</p>
+                </div>
+
+                <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-800 shadow-xl">
+                    <h3 class="text-lg font-semibold text-amber-400 font-mono mb-3 flex items-center gap-2">⚡ Die Selbsterkenntnis (2018)</h3>
+                    <p>Bei einer Körpergröße von <strong>1,80 m</strong> brachte die Waage schließlich die nackte Wahrheit ans Licht: 98 kg. In diesem Moment fiel die Entscheidung, mein Leben grundlegend umzukrempeln.</p>
+                </div>
+
+                <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-800 shadow-xl">
+                    <h3 class="text-lg font-semibold text-emerald-400 font-mono mb-3 flex items-center gap-2">🏃‍♂️ Der Neustart & 15 kg Gewichtsverlust</h3>
+                    <p>Der Anfang war simpel, aber konsequent: Nordic Walking. Richtige Sportausrüstung gekauft und ab diesem Tag gab es keine Ausreden mehr, egal bei welchem Wetter.</p>
+                </div>
+
+                <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-800 shadow-xl border-l-2 border-l-indigo-500">
+                    <h3 class="text-lg font-semibold text-indigo-400 font-mono mb-3 flex items-center gap-2">🏋️‍♂️ Das Fundament: Krafttraining & Routine (Seit 2019)</h3>
+                    <p>Wer einmal Blut geleckt hat, will mehr. 2019 reichte mir das reine Gehen nicht mehr aus. Ich habe eine Hantelbank und Gewichte angeschafft und trainiere seitdem eisern nach Plan.</p>
+                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-sm text-slate-400">
+                        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800/50 flex items-center gap-3">
+                            <span class="text-indigo-400 text-xl">💪</span>
+                            <span><strong>3 - 4 Tage / Woche:</strong> Krafttraining</span>
+                        </div>
+                        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800/50 flex items-center gap-3">
+                            <span class="text-cyan-400 text-xl">🫁</span>
+                            <span><strong>2 Tage / Woche:</strong> Cardio</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="admin-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-xl w-full p-6 space-y-4 shadow-2xl shadow-indigo-500/5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">✍️ Neues Statement verfassen</h3>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white transition text-sm font-mono">&times; Schließen</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-mono text-indigo-400 uppercase tracking-wider mb-1">Kategorie</label>
+                    <input type="text" id="modal-category" readonly class="w-full bg-slate-950 border border-slate-800 rounded-px px-3 py-2 text-sm text-slate-300">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-indigo-400 uppercase tracking-wider mb-1">Dein Statement</label>
+                    <textarea id="modal-text" rows="5" placeholder="Schreibe hier deinen Onchain-Beitrag..." class="w-full bg-slate-950 border border-slate-800 rounded p-3 text-sm text-white focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button onclick="closeAdminModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-medium py-2 px-4 rounded">Abbrechen</button>
+                    <button onclick="submitStatement()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium py-2 px-5 rounded flex items-center gap-2">🚀 Onchain senden</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="p-4 text-center text-xs text-slate-600 border-t border-slate-900">
+        &copy; 2026 - Mein Base-Fitness-Dashboard. Erstellt mit VS Code & Vercel.
+    </footer>
+
+    <script>
+        // Globale Daten-Speicher für das Blättern
+        let globalKraftData = [];
+        let globalCardioData = [];
+
+        let currentKraftPage = 1;
+        let currentCardioPage = 1;
+        const itemsPerPage = 5; 
+        let currentWeeklyPage = 1;
+        const weeklyItemsPerPage = 5;
+        let globalWeeklyData = [];
+
+        // Logik zum Umschalten der Menü-Tabs
+      function switchTab(activeTab) {
+        const tabs = ['fitness', 'krypto', 'wirtschaft', 'politik', 'ueber-mich'];
+        
+        tabs.forEach(tab => {
+            // 1. Inhalts-Bereiche umschalten
+            const contentElement = document.getElementById(`tab-${tab}`);
+            if (contentElement) {
+                if (tab === activeTab) {
+                    contentElement.classList.remove('hidden');
+                } else {
+                    contentElement.classList.add('hidden');
+                }
+            }
+
+            // 2. Menü-Buttons dynamisch umschalten (Farbe & Hintergrund)
+            // Sucht die Buttons anhand deiner IDs (z.B. tab-fitness-btn oder tab-ueber-mich-btn)
+            const btn = document.getElementById(`tab-${tab}-btn`);
+            if (btn) {
+                if (tab === activeTab) {
+                    btn.classList.add('text-white', 'bg-slate-900');
+                    btn.classList.remove('text-slate-400');
+                } else {
+                    btn.classList.remove('text-white', 'bg-slate-900');
+                    btn.classList.add('text-slate-400');
+                }
+            }
+        });
+
+        // ==========================================
+        // Pager & Wochenübersicht Sichtbarkeit
+        // ==========================================
+        const kraftPager = document.querySelector('#tab-fitness .pagination-wrapper') || 
+                           document.querySelector('.pagination-wrapper') || 
+                           document.getElementById('kraft-pagination');
+                           
+        const weeklyPager = document.getElementById('weekly-pagination-container');
+        const weeklyTable = document.getElementById('weekly-metrics-tbody');
+        const wochenStatistikPanel = weeklyTable ? weeklyTable.closest('.bg-slate-900\\/50') || 
+                                                   weeklyTable.closest('.bg-slate-900') || 
+                                                   weeklyTable.parentElement.parentElement.parentElement : null;
+
+        if (activeTab === 'fitness') {
+            if (kraftPager) kraftPager.style.display = 'flex';
+            if (weeklyPager) weeklyPager.style.display = 'flex';
+            if (wochenStatistikPanel) wochenStatistikPanel.style.setProperty('display', 'block', 'important');
+        } else {
+            if (kraftPager) kraftPager.style.display = 'none';
+            if (weeklyPager) weeklyPager.style.display = 'none';
+            if (wochenStatistikPanel) wochenStatistikPanel.style.setProperty('display', 'none', 'important');
+        }
+    }
+        // =========================================================================
+        // WEB3 & BLOCKCHAIN SETUP
+        // =========================================================================
+        let userWalletAddress = null;
+        const ADMIN_WALLET = "0xd5e0c4bf0074e179de516aa64315f4c4c8d37f41".toLowerCase();
+        const CONTRACT_ADDRESS = "0xc6c497Bb8c6AfA25e1CD464f6574Fe4945ae4f13";
+
+        const CONTRACT_ABI = [
+            "function postStatement(string memory _category, string memory _text) public",
+            "function getStatements() public view returns (tuple(string category, string text, uint256 timestamp)[])"
+        ];
+
+        async function handleWalletAction() {
+            if (userWalletAddress) {
+                disconnectWallet();
+            } else {
+                await connectWallet();
+            }
+        }
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    userWalletAddress = accounts[0].toLowerCase();
+                    updateWalletUI(true);
+                } catch (error) {
+                    console.error("User hat Verbindung abgelehnt oder Fehler:", error);
+                }
+            } else {
+                alert("Bitte installiere eine Web3 Wallet wie MetaMask oder Rabby!");
+            }
+        }
+
+        function disconnectWallet() {
+            userWalletAddress = null;
+            updateWalletUI(false);
+        }
+
+        function updateWalletUI(isConnected) {
+            const dot = document.getElementById("wallet-status-dot");
+            const text = document.getElementById("wallet-status-text");
+
+            if (isConnected) {
+                dot.classList.remove("bg-red-500");
+                dot.classList.add("bg-emerald-500");
+                text.innerText = userWalletAddress.substring(0, 6) + "..." + userWalletAddress.substring(userWalletAddress.length - 4);
+            } else {
+                dot.classList.remove("bg-emerald-500");
+                dot.classList.add("bg-red-500");
+                text.innerText = "Wallet verbinden";
+            }
+        }
+
+        function openAdminModal(category) {
+            if (!userWalletAddress) {
+                alert("Bitte verbinde zuerst deine Wallet!");
+                return;
+            }
+            if (userWalletAddress !== ADMIN_WALLET) {
+                alert("Zugriff verweigert: Deine Wallet-Adresse ist nicht als Admin autorisiert.");
+                return;
+            }
+            document.getElementById("modal-category").value = category;
+            document.getElementById("modal-text").value = "";
+            document.getElementById("admin-modal").classList.remove("hidden");
+        }
+
+        function closeAdminModal() {
+            document.getElementById("admin-modal").classList.add("hidden");
+        }
+
+async function fetchGarminData() {
+    try {
+        console.log("Starte Garmin-Fetch...");
+        const response = await fetch('/api/garmin_sync');
+        
+        if (!response.ok) {
+            throw new Error(`Server-Antwort war nicht OK: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Daten erfolgreich empfangen:", data);
+
+        // 1. Globale Variablen für Kraft, Cardio und Wochen befüllen
+        globalKraftData = data.krafttraining || [];
+        globalCardioData = data.cardio || [];
+        globalWeeklyData = data.weekly || [];
+
+        // Tabellen rendern, falls die Funktionen existieren
+        if (typeof renderKraftTable === 'function') renderKraftTable();
+        if (typeof renderCardioTable === 'function') renderCardioTable();
+        
+        // Ruft die neue gepagte Wochen-Renderschleife auf
+        renderWeeklyTable();
+
+    } catch (error) {
+        console.error("Kritischer Fehler in fetchGarminData:", error);
+
+        const kraftBody = document.getElementById('krafttraining-table-body');
+        const cardioBody = document.getElementById('cardio-table-body');
+        const weeklyTbody = document.getElementById('weekly-metrics-tbody');
+
+        if (kraftBody) kraftBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-400/80 italic">Fehler beim Laden</td></tr>`;
+        if (cardioBody) cardioBody.innerHtml = `<tr><td colspan="6" class="p-4 text-center text-red-400/80 italic">Fehler beim Laden</td></tr>`;
+        if (weeklyTbody) weeklyTbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-400/80 italic">Fehler beim Laden</td></tr>`;
+    }
+}
+
+function renderWeeklyTable() {
+    const weeklyTbody = document.getElementById('weekly-metrics-tbody');
+    if (!weeklyTbody) return;
+
+    weeklyTbody.innerHTML = '';
+
+    if (!globalWeeklyData || globalWeeklyData.length === 0) {
+        weeklyTbody.innerHTML = `<tr><td colspan="5" class="p-4 text-slate-500 italic text-center">Keine Wochendaten gefunden.</td></tr>`;
+        return;
+    }
+
+    // Paging-Berechnung (Zeigt 5 Wochen pro Seite)
+    const start = (currentWeeklyPage - 1) * weeklyItemsPerPage;
+    const end = start + weeklyItemsPerPage;
+    const pageItems = globalWeeklyData.slice(start, end);
+
+    pageItems.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/20 transition border-b border-slate-800/40';
+
+        const intMin = parseInt(row.intensitaet_min) || 0;
+        const kcal = parseInt(row.aktivitaets_kcal) || 0;
+        const schritte = parseInt(row.schritte) || 0;
+        const zielProzent = row.ziel_prozent || '0%';
+
+        // Jedes Feld perfekt ausgrichtet und formatiert
+        tr.innerHTML = `
+            <td class="py-3 px-4 font-medium text-slate-200">${row.zeitraum || '--'}</td>
+            <td class="py-3 px-4 text-center font-mono font-semibold text-indigo-400">${intMin.toLocaleString('de-DE')} min</td>
+            <td class="py-3 px-4 text-center">
+                <span class="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-semibold text-[11px]">${zielProzent}</span>
+            </td>
+            <td class="py-3 px-4 text-center font-mono text-amber-400 font-medium">${kcal.toLocaleString('de-DE')} kcal</td>
+            <td class="py-3 px-4 text-right font-mono font-semibold text-slate-300">${schritte.toLocaleString('de-DE')}</td>
+        `;
+        weeklyTbody.appendChild(tr);
+    });
+
+    // Pager-Buttons im UI aktualisieren
+    const info = document.getElementById('page-weekly-info');
+    if (info) info.textContent = `Seite ${currentWeeklyPage} von ${Math.ceil(globalWeeklyData.length / weeklyItemsPerPage)}`;
+    
+    const prevBtn = document.getElementById('btn-weekly-prev');
+    const nextBtn = document.getElementById('btn-weekly-next');
+    if (prevBtn) prevBtn.disabled = currentWeeklyPage === 1;
+    if (nextBtn) nextBtn.disabled = currentWeeklyPage === Math.ceil(globalWeeklyData.length / weeklyItemsPerPage);
+}
+
+// Funktion für die Blätter-Buttons
+function changeWeeklyPage(direction) {
+    const maxPages = Math.ceil(globalWeeklyData.length / weeklyItemsPerPage);
+    currentWeeklyPage += direction;
+    if (currentWeeklyPage < 1) currentWeeklyPage = 1;
+    if (currentWeeklyPage > maxPages) currentWeeklyPage = maxPages;
+    renderWeeklyTable();
+}
+
+function renderKraftTable() {
+    const tbody = document.getElementById('krafttraining-table-body');
+    if (!tbody) return;
+
+    if (globalKraftData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-slate-500 italic text-center">Keine Krafttraining-Daten gefunden.</td></tr>`;
+        return;
+    }
+
+    const start = (currentKraftPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageItems = globalKraftData.slice(start, end);
+
+    tbody.innerHTML = pageItems.map(item => {
+        // 1. DATUM & DAUER
+        const datum = item['Datum'] || item['datum'] || item['Date'] || '--';
+        const dauer = item['Zeit'] || item['Dauer'] || item['dauer'] || '--';
+        
+        // 2. SÄTZE / WIEDERHOLUNGEN
+        const s_gesamt = item['Sätze insgesamt'] || item['Sätze / Wdh.'] || '--';
+        const w_gesamt = item['Wiederholungen insgesamt'] || '';
+        let saetze = s_gesamt;
+        if (s_gesamt !== '--' && w_gesamt) {
+            saetze = `${s_gesamt} / ${w_gesamt}`;
+        }
+        
+        // 3. KALORIEN (AKTIV / GESAMT)
+        let kcalAktiv = item['Kalorien'] || '--';
+        let kalorienAnzeige = '--';
+        
+        if (kcalAktiv !== '--') {
+            // Bereinigen und in Zahl umwandeln
+            const aktivNum = parseInt(kcalAktiv.toString().replace(' kcal', '').trim(), 10);
+            
+            if (!isNaN(aktivNum)) {
+                // Dynamische Berechnung der Gesamtkalorien (Aktiv + anteiliger Grundumsatz)
+                // Wir nehmen ca. 75 kcal pro Stunde als Basis für den Grundumsatz
+                let stunden = 0.75; // Standard-Fallback (45 Min)
+                if (dauer !== '--') {
+                    const parts = dauer.split(':');
+                    if (parts.length === 3) {
+                        stunden = parseInt(parts[0], 10) + parseInt(parts[1], 10)/60 + parseInt(parts[2], 10)/3600;
+                    }
+                }
+                const bmrAnteil = Math.round(stunden * 75);
+                const kcalGesamt = aktivNum + bmrAnteil;
+                
+                kalorienAnzeige = `${aktivNum} / ${kcalGesamt} kcal`;
+            } else {
+                kalorienAnzeige = `${kcalAktiv} / -- kcal`;
+            }
+        }
+
+        // 4. PULS (Ø / Max)
+        let puls = '--';
+        const avgHF = item['Ø Herzfrequenz'] || item['Durchschnittliche HF'] || '--';
+        const maxHF = item['Maximale Herzfrequenz'] || item['Maximale HF'] || '--';
+        if (avgHF !== '--' && maxHF !== '--') {
+            puls = `${Math.round(parseFloat(avgHF.toString().replace(',', '.')))} / ${Math.round(parseFloat(maxHF.toString().replace(',', '.')))}`;
+        }
+
+        // 5. TRAINING EFFECT (AEROB / ANAEROB) - Liest das kombinierte Garmin-Feld dynamisch aus
+        const teRaw = item['Training Effect'] || item['Aerober TE'] || item['TE'] || '--';
+        let effectAnzeige = '0.0 / 0.0';
+
+        if (teRaw !== '--' && teRaw !== undefined && teRaw !== null) {
+            const teStr = teRaw.toString().trim().replace(',', '.');
+            
+            // Falls Garmin im Feld bereits beide Werte liefert (z.B. "2.6 / 0.5" oder "2.6/0.5")
+            if (teStr.includes('/')) {
+                const parts = teStr.split('/');
+                const aerob = parseFloat(parts[0]);
+                const anaerob = parseFloat(parts[1]);
+                effectAnzeige = `${!isNaN(aerob) ? aerob.toFixed(1) : '0.0'} / ${!isNaN(anaerob) ? anaerob.toFixed(1) : '0.0'}`;
+            } else {
+                // Falls nur ein einzelner Wert drin steht (z.B. "2.6")
+                const aerob = parseFloat(teStr);
+                effectAnzeige = `${!isNaN(aerob) ? aerob.toFixed(1) : '0.0'} / 0.0`;
+            }
+        }
+
+        return `
+            <tr class="border-b border-slate-800/50 hover:bg-slate-900/30 transition">
+                <td class="p-4 text-sm font-medium text-slate-200">${datum}</td>
+                <td class="p-4 text-sm text-slate-300 font-mono">${dauer}</td>
+                <td class="p-4 text-sm text-slate-400 font-mono">${saetze}</td>
+                <td class="p-4 text-sm text-amber-400 font-mono">${kalorienAnzeige}</td>
+                <td class="p-4 text-sm text-rose-400 font-mono font-semibold">${puls}</td>
+                <td class="p-4 text-sm text-indigo-400 font-semibold">${effectAnzeige}</td>
+            </tr>
+        `;
+    }).join('');
+
+    const info = document.getElementById('page-kraft-info');
+    if (info) info.textContent = `Seite ${currentKraftPage} von ${Math.ceil(globalKraftData.length / itemsPerPage)}`;
+    
+    const prevBtn = document.getElementById('btn-kraft-prev');
+    const nextBtn = document.getElementById('btn-kraft-next');
+    if (prevBtn) prevBtn.disabled = currentKraftPage === 1;
+    if (nextBtn) nextBtn.disabled = currentKraftPage === Math.ceil(globalKraftData.length / itemsPerPage);
+}
+
+function renderCardioTable() {
+    const tbody = document.getElementById('cardio-table-body');
+    if (!tbody) return;
+
+    if (globalCardioData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-slate-500 italic text-center">Keine Cardio-Daten gefunden.</td></tr>`;
+        return;
+    }
+
+    const start = (currentCardioPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageItems = globalCardioData.slice(start, end);
+
+    tbody.innerHTML = pageItems.map(item => {
+        // 1. DATUM & TYP
+        const datum = item['Datum'] || item['datum'] || item['Date'] || '--';
+        const typ = item['Aktivitätstyp'] || item['Typ'] || item['Activity Type'] || 'Cardio';
+        
+        // 2. DAUER (Nutzt 'Zeit')
+        const dauer = item['Zeit'] || item['Dauer'] || item['dauer'] || item['Duration'] || '--';
+        
+        // 3. DISTANZ / SCHRITTE
+        let distanzSchritte = '--';
+        const dist = item['Distanz'] || item['distance'] || '--';
+        const steps = item['Schritte'] || item['steps'] || '--';
+        if (dist !== '--' && steps !== '--') {
+            distanzSchritte = `${dist} / ${steps}`;
+        } else if (dist !== '--') {
+            distanzSchritte = dist;
+        } else if (steps !== '--') {
+            distanzSchritte = steps;
+        }
+        
+        // 4. KALORIEN
+        let kalorien = item['Kalorien'] || item['kalorien'] || item['Calories'] || '--';
+        if (kalorien !== '--') {
+            kalorien = kalorien.toString().replace(' kcal', '') + ' kcal';
+        }
+        
+        // 5. PULS (Nutzt 'Ø Herzfrequenz' und 'Maximale Herzfrequenz')
+        let puls = '--';
+        const avgHF = item['Ø Herzfrequenz'] || item['Durchschnittliche HF'] || item['Avg HR'];
+        const maxHF = item['Maximale Herzfrequenz'] || item['Maximale HF'] || item['Max HR'];
+        if (avgHF && maxHF) {
+            puls = `${Math.round(parseFloat(avgHF.replace(',', '.')))} / ${Math.round(parseFloat(maxHF.replace(',', '.')))}`;
+        } else if (avgHF) {
+            puls = Math.round(parseFloat(avgHF.replace(',', '.')));
+        }
+
+        return `
+            <tr class="border-b border-slate-800/50 hover:bg-slate-900/30 transition">
+                <td class="p-4 text-sm font-medium text-slate-200">${datum}</td>
+                <td class="p-4 text-sm text-indigo-400 font-semibold">${typ}</td>
+                <td class="p-4 text-sm text-slate-300 font-mono">${dauer}</td>
+                <td class="p-4 text-sm text-slate-400 font-mono">${distanzSchritte}</td>
+                <td class="p-4 text-sm text-amber-400 font-mono">${kalorien}</td>
+                <td class="p-4 text-sm text-rose-400 font-mono font-semibold">${puls}</td>
+            </tr>
+        `;
+    }).join('');
+
+    const info = document.getElementById('page-cardio-info');
+    if (info) info.textContent = `Seite ${currentCardioPage} von ${Math.ceil(globalCardioData.length / itemsPerPage)}`;
+    
+    const prevBtn = document.getElementById('btn-cardio-prev');
+    const nextBtn = document.getElementById('btn-cardio-next');
+    if (prevBtn) prevBtn.disabled = currentCardioPage === 1;
+    if (nextBtn) nextBtn.disabled = currentCardioPage === Math.ceil(globalCardioData.length / itemsPerPage);
+}
+        // Event-Listener beim Laden binden
+        window.addEventListener('DOMContentLoaded', () => {
+            // Krafttraining Pagination
+            const kraftPrev = document.getElementById('btn-kraft-prev');
+            const kraftNext = document.getElementById('btn-kraft-next');
+            if (kraftPrev) kraftPrev.addEventListener('click', () => { if (currentKraftPage > 1) { currentKraftPage--; renderKraftTable(); } });
+            if (kraftNext) kraftNext.addEventListener('click', () => { if ((currentKraftPage * itemsPerPage) < globalKraftData.length) { currentKraftPage++; renderKraftTable(); } });
+
+            // Cardio Pagination
+            const cardioPrev = document.getElementById('btn-cardio-prev');
+            const cardioNext = document.getElementById('btn-cardio-next');
+            if (cardioPrev) cardioPrev.addEventListener('click', () => { if (currentCardioPage > 1) { currentCardioPage--; renderCardioTable(); } });
+            if (cardioNext) cardioNext.addEventListener('click', () => { if ((currentCardioPage * itemsPerPage) < globalCardioData.length) { currentCardioPage++; renderCardioTable(); } });
+
+            // Daten initial abrufen
+            fetchGarminData();
+        });
+        // Prüft beim Laden der Seite, ob die Box angezeigt werden soll
+document.addEventListener("DOMContentLoaded", function() {
+    if (!localStorage.getItem("web3InfoDismissed")) {
+        const infoBox = document.getElementById("web3-info-box");
+        if (infoBox) infoBox.classList.remove("hidden");
+    }
+});
+
+// Schließt die Box und merkt sich die Entscheidung dauerhaft
+function dismissWeb3Info() {
+    const infoBox = document.getElementById("web3-info-box");
+    if (infoBox) {
+        infoBox.classList.add("hidden");
+    }
+    localStorage.setItem("web3InfoDismissed", "true");
+}
+    </script>
+</body>
+</html>
