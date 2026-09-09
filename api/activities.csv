@@ -1,4 +1,5 @@
 Aktivitätstyp,Datum,Favorit,Titel,Distanz,Kalorien,Zeit,Ø Herzfrequenz,Maximale Herzfrequenz,Aerober TE,Ø Schrittfrequenz (Laufen),Max. Schrittfrequenz (Laufen),Ø Pace,Beste Pace,Anstieg gesamt,Abstieg gesamt,Ø Schrittlänge,Durchschnittliches vertikales Verhältnis,Ø vertikale Bewegung,Ø Bodenkontaktzeit,Normalized Power® (NP®),Training Stress Score®,Ø Leistung,Max. Leistung,Grit,Flow,Schritte,Wiederholungen insgesamt,Sätze insgesamt,Body Battery Abnahme,Dekompression,Beste Rundenzeit,Anzahl der Runden,Zeit in Bewegung,Verstrichene Zeit,Minimale Höhe,Maximale Höhe
+treadmill_running,2026-09-08 15:02:38,false,Laufbandtraining,"10,00",517,01:16:02,117,128,"2,2"
 mountain_biking,2026-09-06 08:45:00,false,Nassereith Mountainbiken,"26,52",653,01:35:54,119,141,"2,7"
 walking,2026-09-05 09:56:42,false,Nassereith Gehen,"8,48",583,01:27:20,112,133,"2,3"
 treadmill_running,2026-09-04 12:06:49,false,Laufbandtraining,"6,00",404,00:40:53,134,148,"3,3"
